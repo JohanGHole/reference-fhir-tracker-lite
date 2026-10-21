@@ -1,0 +1,51 @@
+server:
+  port: 9080
+  error:
+    whitelabel:
+      enabled: false
+
+camel:
+  main:
+    name: fhir-tracker-lite
+  springboot:
+    main-run-controller: true
+  rest:
+    context-path: /api
+  dataformat:
+    json-jackson:
+      auto-discover-object-mapper: true
+
+management:
+  endpoints:
+    web:
+      base-path: /management
+      exposure:
+        include: health,info,camelroutes
+  endpoint:
+    health:
+      show-details: always
+
+dhis2:
+  api:
+    url: http://localhost:8080/api
+    username: admin
+    password: district
+  # UIDs created by config/dhis2/metadata.json
+  orgUnit:
+    id: DemoClinic1
+  trackedEntityType:
+    id: DemoPerson1
+  program:
+    id: DemoProgrm1
+  attribute:
+    givenName: AttrGivenNm
+    familyName: AttrFamilyN
+    sex: AttrSexCode
+    birthDate: AttrBirthDt
+    nationalId: AttrNatIdNo
+    fhirId: AttrFhirIdN
+
+fhir:
+  # Patient.identifier.system that carries the national ID used as the DHIS2 unique attribute
+  nationalId:
+    system: urn:oid:2.16.578.1.12.4.1.4.1

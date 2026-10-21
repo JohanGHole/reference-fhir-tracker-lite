@@ -1,0 +1,181 @@
+#
+# Receives a FHIR R4 Patient and registers it in DHIS2 Tracker as a tracked entity enrolled in
+# the configured program.
+#
+#   POST /api/Patient  (application/fhir+json)
+#     201 -> {"trackedEntity": "<uid>", "status": "OK"}
+#     400 -> OperationOutcome: body is not a parseable FHIR Patient
+#     422 -> OperationOutcome: Patient has no national ID for the configured identifier system
+#     409 -> OperationOutcome: DHIS2 rejected the import (e.g. duplicate national ID)
+#     502 -> OperationOutcome: DHIS2 unreachable or returned an unexpected error
+#
+
+# Error handlers must be declared before any route in the file (Camel rejects them otherwise).
+- onException:
+    description: The request body could not be parsed as FHIR
+    exception:
+      - ca.uhn.fhir.parser.DataFormatException
+    handled:
+      constant: "true"
+    steps:
+      - setVariable:
+          name: issueCode
+          constant: structure
+      - setVariable:
+          name: diagnostics
+          simple: "${exception.message}"
+      - setHeader:
+          name: CamelHttpResponseCode
+          constant: "400"
+      - to: direct:operationOutcome
+
+- onException:
+    description: DHIS2 answered with a non-2xx status, or could not be reached
+    exception:
+      - org.hisp.dhis.integration.sdk.api.Dhis2ClientException
+    handled:
+      constant: "true"
+    steps:
+      - log:
+          message: "DHIS2 import failed: ${exception.message}"
+          loggingLevel: WARN
+      - process:
+          description: Sets issueCode/diagnostics and maps DHIS2 409 to 409, anything else to 502
+          ref: dhis2ErrorProcessor
+      - to: direct:operationOutcome
+
+- rest:
+    path: /Patient
+    post:
+      - id: postPatient
+        description: Registers a FHIR Patient as a DHIS2 tracked entity and enrolls it in the program
+        consumes: application/fhir+json,application/json
+        produces: application/json
+        bindingMode: "off"
+        to: direct:receivePatient
+
+- route:
+    id: receivePatientRoute
+    description: |
+      Validates the inbound FHIR Patient, maps it to a DHIS2 Tracker payload with DataSonnet and imports it
+      synchronously into DHIS2.
+    from:
+      uri: direct:receivePatient
+      steps:
+        - removeHeaders:
+            description: Drops inbound HTTP headers so they do not leak into outbound calls
+            pattern: "CamelHttp*"
+        - unmarshal:
+            description: |
+              Parses the body with HAPI FHIR. Malformed JSON or an unknown resource type raises a DataFormatException
+              which is turned into a 400 OperationOutcome by the error handler below.
+            fhirJson:
+              fhirVersion: R4
+        - choice:
+            description: Only Patient resources are accepted on this endpoint
+            when:
+              - simple: "${body} !is 'org.hl7.fhir.r4.model.Patient'"
+                steps:
+                  - setVariable:
+                      name: issueCode
+                      constant: invalid
+                  - setVariable:
+                      name: diagnostics
+                      simple: "Expected a Patient resource but received ${body.fhirType()}"
+                  - setHeader:
+                      name: CamelHttpResponseCode
+                      constant: "400"
+                  - to: direct:operationOutcome
+                  - stop: {}
+        - marshal:
+            description: Turns the FHIR resource back into a raw JSON string
+            fhirJson: {}
+        - unmarshal:
+            description: Deserialises the JSON into a java.util.Map so that DataSonnet can navigate it
+            json: {}
+        - choice:
+            description: The national ID is the DHIS2 unique attribute, so a Patient without one is rejected
+            when:
+              - jsonpath:
+                  expression: "$.identifier[?(@.system == '{{fhir.nationalId.system}}')].value"
+                  suppressExceptions: true
+                steps:
+                  - log:
+                      message: "Patient carries a national ID for system {{fhir.nationalId.system}}"
+                      loggingLevel: DEBUG
+            otherwise:
+              steps:
+                - setVariable:
+                    name: issueCode
+                    constant: required
+                - setVariable:
+                    name: diagnostics
+                    simple: "Patient.identifier with system {{fhir.nationalId.system}} is required"
+                - setHeader:
+                    name: CamelHttpResponseCode
+                    constant: "422"
+                - to: direct:operationOutcome
+                - stop: {}
+        - setProperty:
+            description: Enrollment date used by the DataSonnet mapping
+            name: enrolledAt
+            simple: "${date:now:yyyy-MM-dd}"
+        - transform:
+            description: Maps the FHIR Patient onto a DHIS2 Tracker import payload
+            datasonnet:
+              expression: resource:classpath:datasonnet/patient-to-tracker.ds
+              bodyMediaType: application/x-java-object
+              outputMediaType: application/x-java-object
+              resultType: java.util.Map
+        - marshal:
+            json: {}
+        - convertBodyTo:
+            type: java.lang.String
+        - to:
+            id: dhis2TrackerImport
+            description: Imports the tracked entity and its enrollment synchronously into DHIS2
+            uri: dhis2:post/resource
+            parameters:
+              path: tracker?async=false&importStrategy=CREATE
+              client: "#dhis2Client"
+        - unmarshal:
+            json: {}
+        - setVariable:
+            name: trackedEntity
+            jsonpath:
+              expression: "$.bundleReport.typeReportMap.TRACKED_ENTITY.objectReports[0].uid"
+              suppressExceptions: true
+        - log: "Registered FHIR Patient as DHIS2 tracked entity ${variable.trackedEntity}"
+        - setHeader:
+            name: CamelHttpResponseCode
+            constant: "201"
+        - setHeader:
+            name: Content-Type
+            constant: application/json
+        - setBody:
+            simple: '{"trackedEntity": "${variable.trackedEntity}", "status": "OK"}'
+
+- route:
+    id: operationOutcomeRoute
+    description: |
+      Builds a FHIR OperationOutcome from the `issueCode` and `diagnostics` variables. DataSonnet does the JSON
+      encoding so that arbitrary error text (quotes, newlines) is escaped correctly.
+    from:
+      uri: direct:operationOutcome
+      steps:
+        - setBody:
+            description: The OperationOutcome is built from variables only, so the current body is discarded
+            constant: "{}"
+        - transform:
+            datasonnet:
+              bodyMediaType: application/json
+              expression: |
+                {
+                  resourceType: 'OperationOutcome',
+                  issue: [{ severity: 'error', code: cml.variable('issueCode'), diagnostics: cml.variable('diagnostics') }],
+                }
+              outputMediaType: application/json
+              resultType: java.lang.String
+        - setHeader:
+            name: Content-Type
+            constant: application/fhir+json

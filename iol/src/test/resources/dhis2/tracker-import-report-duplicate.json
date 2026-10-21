@@ -1,0 +1,15 @@
+{
+  "status": "ERROR",
+  "validationReport": {
+    "errorReports": [
+      {
+        "message": "Non-unique attribute value `13116900216` for attribute `AttrNatIdNo`",
+        "errorCode": "E1064",
+        "trackerType": "TRACKED_ENTITY",
+        "uid": "TeKariNord2"
+      }
+    ],
+    "warningReports": []
+  },
+  "stats": { "created": 0, "updated": 0, "deleted": 0, "ignored": 2, "total": 2 }
+}

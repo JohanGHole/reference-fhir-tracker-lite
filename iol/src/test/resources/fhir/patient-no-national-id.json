@@ -1,0 +1,18 @@
+{
+  "resourceType": "Patient",
+  "id": "ola-uten-id",
+  "identifier": [
+    {
+      "system": "http://example.org/mrn",
+      "value": "MRN-0043"
+    }
+  ],
+  "name": [
+    {
+      "family": "Nordmann",
+      "given": ["Ola"]
+    }
+  ],
+  "gender": "male",
+  "birthDate": "1972-03-01"
+}

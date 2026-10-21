@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__camel__camel_catalog_components",
+      "mcp__camel__camel_catalog_component_doc",
+      "mcp__camel__camel_catalog_component_maven",
+      "mcp__camel__camel_catalog_eips",
+      "mcp__camel__camel_catalog_eip_doc",
+      "mcp__camel__camel_catalog_languages",
+      "mcp__camel__camel_catalog_language_doc",
+      "mcp__camel__camel_catalog_dataformats",
+      "mcp__camel__camel_catalog_dataformat_doc",
+      "mcp__camel__camel_catalog_examples",
+      "mcp__camel__camel_catalog_example_file",
+      "mcp__camel__camel_validate_yaml_dsl",
+      "mcp__camel__camel_validate_route",
+      "mcp__camel__camel_route_test_scaffold",
+      "mcp__camel__camel_route_harden_context",
+      "mcp__camel__camel_dependency_check",
+      "mcp__camel__camel_error_diagnose",
+      "mcp__camel__camel_render_route_diagram",
+      "mcp__camel__camel_runtime_processes",
+      "mcp__camel__camel_runtime_routes",
+      "mcp__camel__camel_runtime_history",
+      "mcp__camel__camel_runtime_errors",
+      "mcp__camel__camel_runtime_health",
+      "Bash(./mvnw:*)",
+      "Bash(docker compose:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}

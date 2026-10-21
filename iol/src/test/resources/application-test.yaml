@@ -1,0 +1,7 @@
+# Test profile. dhis2.api.url is injected per test class (fake DHIS2 or Testcontainers DHIS2).
+camel:
+  main:
+    name: fhir-tracker-lite-test
+logging:
+  level:
+    org.hisp.dhis.integration: DEBUG

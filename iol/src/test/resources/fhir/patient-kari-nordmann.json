@@ -1,0 +1,27 @@
+{
+  "resourceType": "Patient",
+  "id": "kari-nordmann",
+  "identifier": [
+    {
+      "system": "urn:oid:2.16.578.1.12.4.1.4.1",
+      "value": "13116900216"
+    },
+    {
+      "system": "http://example.org/mrn",
+      "value": "MRN-0042"
+    }
+  ],
+  "name": [
+    {
+      "use": "nickname",
+      "given": ["Kari"]
+    },
+    {
+      "use": "official",
+      "family": "Nordmann",
+      "given": ["Kari", "Anne"]
+    }
+  ],
+  "gender": "female",
+  "birthDate": "1969-11-13"
+}

@@ -1,0 +1,235 @@
+{
+  "organisationUnits": [
+    {
+      "id": "DemoClinic1",
+      "name": "Demo Clinic",
+      "shortName": "Demo Clinic",
+      "code": "DEMO_CLINIC",
+      "openingDate": "2020-01-01"
+    }
+  ],
+  "optionSets": [
+    {
+      "id": "OsetGender1",
+      "name": "FHIR administrative gender",
+      "code": "FHIR_ADMINISTRATIVE_GENDER",
+      "valueType": "TEXT",
+      "options": [
+        {
+          "id": "OptGenMale1"
+        },
+        {
+          "id": "OptGenFemal"
+        },
+        {
+          "id": "OptGenOther"
+        },
+        {
+          "id": "OptGenUnkno"
+        }
+      ]
+    }
+  ],
+  "options": [
+    {
+      "id": "OptGenMale1",
+      "code": "male",
+      "name": "Male",
+      "sortOrder": 1,
+      "optionSet": {
+        "id": "OsetGender1"
+      }
+    },
+    {
+      "id": "OptGenFemal",
+      "code": "female",
+      "name": "Female",
+      "sortOrder": 2,
+      "optionSet": {
+        "id": "OsetGender1"
+      }
+    },
+    {
+      "id": "OptGenOther",
+      "code": "other",
+      "name": "Other",
+      "sortOrder": 3,
+      "optionSet": {
+        "id": "OsetGender1"
+      }
+    },
+    {
+      "id": "OptGenUnkno",
+      "code": "unknown",
+      "name": "Unknown",
+      "sortOrder": 4,
+      "optionSet": {
+        "id": "OsetGender1"
+      }
+    }
+  ],
+  "trackedEntityAttributes": [
+    {
+      "id": "AttrNatIdNo",
+      "name": "National ID",
+      "shortName": "National ID",
+      "valueType": "TEXT",
+      "aggregationType": "NONE",
+      "unique": true,
+      "sharing": {
+        "public": "rwrw----"
+      },
+      "orgunitScope": false,
+      "generated": false
+    },
+    {
+      "id": "AttrGivenNm",
+      "name": "Given name",
+      "shortName": "Given name",
+      "valueType": "TEXT",
+      "aggregationType": "NONE",
+      "unique": false,
+      "sharing": {
+        "public": "rwrw----"
+      }
+    },
+    {
+      "id": "AttrFamilyN",
+      "name": "Family name",
+      "shortName": "Family name",
+      "valueType": "TEXT",
+      "aggregationType": "NONE",
+      "unique": false,
+      "sharing": {
+        "public": "rwrw----"
+      }
+    },
+    {
+      "id": "AttrSexCode",
+      "name": "Sex",
+      "shortName": "Sex",
+      "valueType": "TEXT",
+      "aggregationType": "NONE",
+      "unique": false,
+      "sharing": {
+        "public": "rwrw----"
+      },
+      "optionSet": {
+        "id": "OsetGender1"
+      }
+    },
+    {
+      "id": "AttrBirthDt",
+      "name": "Date of birth",
+      "shortName": "Date of birth",
+      "valueType": "DATE",
+      "aggregationType": "NONE",
+      "unique": false,
+      "sharing": {
+        "public": "rwrw----"
+      }
+    },
+    {
+      "id": "AttrFhirIdN",
+      "name": "FHIR Patient ID",
+      "shortName": "FHIR Patient ID",
+      "valueType": "TEXT",
+      "aggregationType": "NONE",
+      "unique": false,
+      "sharing": {
+        "public": "rwrw----"
+      }
+    }
+  ],
+  "trackedEntityTypes": [
+    {
+      "id": "DemoPerson1",
+      "name": "Demo Person",
+      "sharing": {
+        "public": "rwrw----"
+      }
+    }
+  ],
+  "programs": [
+    {
+      "id": "DemoProgrm1",
+      "name": "FHIR Patient Registration (demo)",
+      "shortName": "FHIR Patient Registration",
+      "programType": "WITH_REGISTRATION",
+      "trackedEntityType": {
+        "id": "DemoPerson1"
+      },
+      "organisationUnits": [
+        {
+          "id": "DemoClinic1"
+        }
+      ],
+      "onlyEnrollOnce": true,
+      "sharing": {
+        "public": "rwrw----"
+      },
+      "programTrackedEntityAttributes": [
+        {
+          "id": "PteaNatIdNo",
+          "trackedEntityAttribute": {
+            "id": "AttrNatIdNo"
+          },
+          "mandatory": true,
+          "searchable": true,
+          "displayInList": true,
+          "sortOrder": 1
+        },
+        {
+          "id": "PteaGivenNm",
+          "trackedEntityAttribute": {
+            "id": "AttrGivenNm"
+          },
+          "mandatory": false,
+          "searchable": false,
+          "displayInList": true,
+          "sortOrder": 2
+        },
+        {
+          "id": "PteaFamilyN",
+          "trackedEntityAttribute": {
+            "id": "AttrFamilyN"
+          },
+          "mandatory": false,
+          "searchable": true,
+          "displayInList": true,
+          "sortOrder": 3
+        },
+        {
+          "id": "PteaSexCode",
+          "trackedEntityAttribute": {
+            "id": "AttrSexCode"
+          },
+          "mandatory": false,
+          "searchable": false,
+          "displayInList": true,
+          "sortOrder": 4
+        },
+        {
+          "id": "PteaBirthDt",
+          "trackedEntityAttribute": {
+            "id": "AttrBirthDt"
+          },
+          "mandatory": false,
+          "searchable": false,
+          "displayInList": true,
+          "sortOrder": 5
+        },
+        {
+          "id": "PteaFhirIdN",
+          "trackedEntityAttribute": {
+            "id": "AttrFhirIdN"
+          },
+          "mandatory": false,
+          "searchable": false,
+          "displayInList": true,
+          "sortOrder": 6
+        }
+      ]
+    }
+  ]
+}

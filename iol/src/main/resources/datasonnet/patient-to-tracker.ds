@@ -1,0 +1,49 @@
+// Maps a FHIR R4 Patient (as a java.util.Map) onto a DHIS2 Tracker import payload that
+// creates one tracked entity enrolled in the configured program.
+//
+// FHIR administrative-gender codes (male|female|other|unknown) are used as-is: the DHIS2
+// option set in config/dhis2/metadata.json uses the same codes, so no lookup table is needed.
+local nationalIdSystem = cml.properties('fhir.nationalId.system');
+
+local field(obj, key) = if obj != null && std.objectHas(obj, key) then obj[key] else null;
+
+local names = if std.objectHas(body, 'name') then body.name else [];
+local officialNames = std.filter(function(n) field(n, 'use') == 'official', names);
+local name =
+  if std.length(officialNames) > 0 then officialNames[0]
+  else if std.length(names) > 0 then names[0]
+  else {};
+
+local identifiers = if std.objectHas(body, 'identifier') then body.identifier else [];
+local nationalIds = std.filter(function(i) field(i, 'system') == nationalIdSystem, identifiers);
+
+local givenNames = field(name, 'given');
+
+local attr(id, value) = if value == null then [] else [{ attribute: id, value: value }];
+
+local orgUnit = cml.properties('dhis2.orgUnit.id');
+
+{
+  trackedEntities: [
+    {
+      trackedEntityType: cml.properties('dhis2.trackedEntityType.id'),
+      orgUnit: orgUnit,
+      enrollments: [
+        {
+          program: cml.properties('dhis2.program.id'),
+          orgUnit: orgUnit,
+          enrolledAt: cml.exchangeProperty('enrolledAt'),
+          occurredAt: cml.exchangeProperty('enrolledAt'),
+          attributes:
+            attr(cml.properties('dhis2.attribute.nationalId'), if std.length(nationalIds) > 0 then nationalIds[0].value else null)
+            + attr(cml.properties('dhis2.attribute.givenName'), if givenNames != null then std.join(' ', givenNames) else null)
+            + attr(cml.properties('dhis2.attribute.familyName'), field(name, 'family'))
+            + attr(cml.properties('dhis2.attribute.sex'), field(body, 'gender'))
+            + attr(cml.properties('dhis2.attribute.birthDate'), field(body, 'birthDate'))
+            + attr(cml.properties('dhis2.attribute.fhirId'), field(body, 'id')),
+        },
+      ],
+    },
+  ],
+}
+

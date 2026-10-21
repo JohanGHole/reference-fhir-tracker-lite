@@ -1,0 +1,24 @@
+{
+  "trackedEntities": [
+    {
+      "trackedEntityType": "DemoPerson1",
+      "orgUnit": "DemoClinic1",
+      "enrollments": [
+        {
+          "program": "DemoProgrm1",
+          "orgUnit": "DemoClinic1",
+          "enrolledAt": "<TODAY>",
+          "occurredAt": "<TODAY>",
+          "attributes": [
+            { "attribute": "AttrNatIdNo", "value": "13116900216" },
+            { "attribute": "AttrGivenNm", "value": "Kari Anne" },
+            { "attribute": "AttrFamilyN", "value": "Nordmann" },
+            { "attribute": "AttrSexCode", "value": "female" },
+            { "attribute": "AttrBirthDt", "value": "1969-11-13" },
+            { "attribute": "AttrFhirIdN", "value": "kari-nordmann" }
+          ]
+        }
+      ]
+    }
+  ]
+}
